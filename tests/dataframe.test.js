@@ -571,6 +571,32 @@ test("DataFrame rows can be ", (assert) => {
         "sorted and reverse by multiple columns."
     );
 
+
+    const df5b = new DataFrame(
+        {
+            name: ["Keven", "Li", "William", "Clair", "Barbara", "John"],
+            test1: [95, 95, 95, 95, 94, 94],
+            test2: [90, 90, 95, 89, 94, 98],
+            test3: [76, 75, 76, 76, 99, 77]
+        },
+        ["name", "test1", "test2", "test3"]
+    );
+    assert.deepEqual(
+        df5b.sortByMultiReverse(["test1", "test2", "test3"], [true, false, false]).toArray(),
+        [
+            ["Clair",   95, 89, 76],
+            ["Li",      95, 90, 75],
+            ["Keven",   95, 90, 76],
+            ["William", 95, 95, 76],
+            ["Barbara", 94, 94, 99],
+            ["John",    94, 98, 77],
+        ],
+        "sorted by multiple columns."
+    );
+
+
+
+
     assert.deepEqual(
         new DataFrame(
             {

@@ -1056,6 +1056,82 @@ class DataFrame {
     }
 
     /**
+     * Sort DataFrame rows based on column values. The row should contains only one variable type. Columns are sorted left-to-right.
+     * @param {String | Array<string>} columnNames The columns giving order.
+     * @param {Array} reverse Reverse mode. Reverse the order if true. true desc false asc
+     * @param {String} [missingValuesPosition='first'] Define the position of missing values (undefined, nulls and NaN) in the order.
+     * @returns {DataFrame} An ordered DataFrame.
+     * @example
+     * df.sortBy('id')
+     * df.sortBy(['id1', 'id2'])
+     * df.sortBy(['id1'], true)
+     */
+    sortByMultiReverse(columnNames, reverse = [], missingValuesPosition = "first") {
+        if (!Array.isArray(columnNames)) {
+            columnNames = [columnNames];
+        }
+        const _columnNames = columnNames;
+        const _missingValuesPosition = ["first", "last"].includes(
+            missingValuesPosition
+        )
+            ? missingValuesPosition
+            : "first";
+
+        const _checkMissingValue = (v) => [NaN, null, undefined].includes(v);
+        const sortedRows = this[__rows__].sort((p, n) => {
+            return _columnNames
+                .map((col, index) => {
+                    const [pValue, nValue] = [p.get(col), n.get(col)];
+                    if (_checkMissingValue(pValue)) {
+                        return _missingValuesPosition === "last" ? 1 : -1;
+                    } else if (_checkMissingValue(nValue)) {
+                        return _missingValuesPosition === "last" ? -1 : 1;
+                    } else if (typeof pValue !== typeof nValue) {
+                        throw new MixedTypeError([
+                            typeof pValue,
+                            typeof nValue
+                        ]);
+                    } else if (pValue > nValue) {
+                        return reverse[index] ? -1 : 1;
+                    } else if (pValue < nValue) {
+                        return reverse[index] ? 1 : -1;
+                    }
+                    return 0;
+                })
+                .reduce((acc, curr) => {
+                    return acc || curr;
+                });
+        });
+
+        if (_columnNames.length > 1) {
+            const sortedRowsWithMissingValues = [];
+            const sortedRowsWithoutMissingValues = [];
+            sortedRows.forEach((row) => {
+                for (const col of _columnNames) {
+                    if (_checkMissingValue(row.get(col))) {
+                        sortedRowsWithMissingValues.push(row);
+                        return;
+                    }
+                }
+                sortedRowsWithoutMissingValues.push(row);
+            });
+
+            return this.__newInstance__(
+                missingValuesPosition === "last"
+                    ? sortedRowsWithoutMissingValues.concat(
+                        sortedRowsWithMissingValues
+                    )
+                    : sortedRowsWithMissingValues.concat(
+                        sortedRowsWithoutMissingValues
+                    ),
+                this[__columns__]
+            );
+        }
+
+        return this.__newInstance__(sortedRows, this[__columns__]);
+    }
+
+    /**
      * Concat two DataFrames.
      * @param {DataFrame} dfToUnion The DataFrame to concat.
      * @returns {DataFrame} A new concatenated DataFrame resulting of the union.
