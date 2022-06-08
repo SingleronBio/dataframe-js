@@ -19,7 +19,7 @@
     "bugs": "https://github.com/Gmousse/dataframe-js/issues",
     "repository": {
         "type": "git",
-        "url": "https://github.com/Gmousse/dataframe-js.git"
+        "url": "git@github.com:SingleronBio/dataframe-js.git"
     },
     "main": "./lib/index.js",
     "scripts": {
